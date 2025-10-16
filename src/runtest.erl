@@ -99,6 +99,7 @@ standard_filters() ->
     ,filter_binaries
     ].
 
+-spec build_filters(list(), list()) -> [fun((tab()) -> tab())].
 build_filters([{unless,Opt,F}|Fs], Opts) ->
     case option(Opt, Opts) of
         true -> build_filters(Fs, Opts);
@@ -109,6 +110,7 @@ build_filters([], _) -> [].
 
 make_filter(F) -> erlang:make_fun(?MODULE, F, 1).
 
+-spec apply_filters(tab(), [fun((tab()) -> tab())]) -> tab().
 apply_filters(Tab, Filters) ->
     lists:foldl(fun(F, T) -> F(T) end, lists:sort(Tab), Filters).
 
@@ -216,6 +218,7 @@ read_term(Filename) ->
     ok = file:close(Fd),
     Term.
 
+-spec dump_term(file:filename(), term()) -> ok.
 dump_term(Filename, Term) ->
     case filelib:is_file(Filename) of
         true -> throw({file_exists,Filename});

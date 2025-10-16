@@ -33,6 +33,8 @@
 
 -import(?utils, [str/2]).
 
+%% Prevent auto-import of erlang:unalias/1 to use our local unalias/1 function
+-compile({no_auto_import,[unalias/1]}).
 
 -type map_key() :: cerl:var_name().
 -type map_val() :: mfa() | pos_integer().

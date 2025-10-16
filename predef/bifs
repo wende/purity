@@ -1,12 +1,21 @@
 ## Tab or space separated list of MFAs and their hard-coded purity.
 # Empty lines and those starting with # are ignored.
-# `se' stands for Side-Effect
-# `nd' stands for Non-Determinism
+#
+# Purity Classification Levels (from most pure to least pure):
+# `p'  - Pure: referentially transparent, no side effects, no exceptions
+# `e'  - Exceptions: may raise exceptions but otherwise pure
+# `d'  - Dependent: depends on execution environment (e.g., time, process dict)
+# `n'  - NIF: calls Native Implemented Function (behavior unknown, assumed impure)
+# `s'  - Side Effects: has observable side effects (I/O, process operations, etc.)
+#
+# Legacy abbreviations used in comments:
 # `ex' stands for Exceptions
-# While possible for `ex' to complement `nd', the current implementation
-# will always consider 'ex' impure iff 'nd' is also impure.
-# When it is not clear whether a value has side-effects, it will
-# be simply marked with `false'.
+# `nd' stands for Non-Determinism
+# `se' stands for Side-Effect
+#
+# Notes:
+# - NIFs are typically detected at runtime when PURITY sees erlang:nif_error calls
+# - When purity is unclear, functions are marked with the most restrictive level
 binary,at,2		e
 binary,bin_to_list,1	e
 binary,bin_to_list,2	e
