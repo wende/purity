@@ -110,7 +110,7 @@
 -type expr()   :: {erl, 'catch' | {'receive', finite | infinite}}.
 
 
--spec module_rmap(dict()) -> dict().
+-spec module_rmap(dict:dict()) -> dict:dict().
 module_rmap(Tab) ->
     dict:map(fun remove_self/2, dict_fold(fun module_rmap/3, Tab)).
 
@@ -124,7 +124,7 @@ remove_self(M, Rs) ->
     ordsets:del_element(M, ordsets:from_list(Rs)).
 
 
--spec function_rmap(dict()) -> dict().
+-spec function_rmap(dict:dict()) -> dict:dict().
 function_rmap(Tab) ->
     dict_map(fun lists:usort/1, dict_fold(fun function_rmap/3, Tab)).
 
@@ -155,7 +155,7 @@ common_dependencies(D) ->
 
 
 %% @doc Higher level dependency collectors which work on an entire lookup table.
--spec dependencies(dict(), fun((term()) -> boolean())) -> [term()].
+-spec dependencies(dict:dict(), fun((term()) -> boolean())) -> [term()].
 
 dependencies(Table, Filter) ->
     uflatten(dict:fold(dep_collector(Filter), [], Table)).
@@ -191,7 +191,7 @@ is_bif(Fun) ->
 
 %% @doc Remove any functions belonging to Modules from the Table.
 
--spec delete_modules(D, [module()]) -> D when D :: dict().
+-spec delete_modules(D, [module()]) -> D when D :: dict:dict().
 
 delete_modules(Table, []) ->
     Table;
@@ -204,31 +204,31 @@ delete_modules(Table, Modules) ->
 
 %%% Dict related helpers. %%%
 
--spec dict_map(fun((Value) -> Value), D) -> D when D :: dict().
+-spec dict_map(fun((Value) -> Value), D) -> D when D :: dict:dict().
 dict_map(Fun, Dict) -> dict:map(fun (_K, V) -> Fun(V) end, Dict).
 
--spec dict_fold(fun((term(), term(), Acc) -> Acc), dict()) -> Acc when Acc :: dict().
+-spec dict_fold(fun((term(), term(), Acc) -> Acc), dict:dict()) -> Acc when Acc :: dict:dict().
 dict_fold(Fun, Dict) -> dict:fold(Fun, dict:new(), Dict).
 
--spec dict_cons(term(), term(), D) -> D when D :: dict().
+-spec dict_cons(term(), term(), D) -> D when D :: dict:dict().
 dict_cons(Key, Value, Dict) ->
     dict:update(Key, fun (Previous) -> [Value|Previous] end, [Value], Dict).
 
--spec dict_fetch(term(), dict(), term()) -> term().
+-spec dict_fetch(term(), dict:dict(), term()) -> term().
 dict_fetch(Key, Dict, Default) ->
     case dict:find(Key, Dict) of
         {ok, Value} -> Value;
         error -> Default
     end.
 
--spec dict_update(dict(), dict()) -> dict().
+-spec dict_update(dict:dict(), dict:dict()) -> dict:dict().
 dict_update(Dict1, Dict2) ->
     dict:merge(fun (_K, _V1, V2) -> V2 end, Dict1, Dict2).
 
 
 %% @doc Not as efficient as a native implementation would be,
 %% but usefull all the same.
--spec dict_mapfold(fun((term(), Value, Acc) -> {Value, Acc}), Acc, dict()) -> {dict(), Acc}.
+-spec dict_mapfold(fun((term(), Value, Acc) -> {Value, Acc}), Acc, dict:dict()) -> {dict:dict(), Acc}.
 dict_mapfold(Fun, Acc0, Dict) ->
     dict:fold(
         fun(K, V1, {Map, Acc1}) ->
@@ -238,12 +238,12 @@ dict_mapfold(Fun, Acc0, Dict) ->
 
 
 %% @doc Update a dict with a list of key-value pairs.
--spec dict_store([{term(),term()}], dict()) -> dict().
+-spec dict_store([{term(),term()}], dict:dict()) -> dict:dict().
 dict_store(KeyVals, Dict) ->
     lists:foldl(fun ({K, V}, D) -> dict:store(K, V, D) end, Dict, KeyVals).
 
 %% @doc Update a list of keys with the same value in a dictionary.
--spec dict_store([term()], term(), dict()) -> dict().
+-spec dict_store([term()], term(), dict:dict()) -> dict:dict().
 dict_store(Keys, Value, Dict) ->
     lists:foldl(fun (K, D) -> dict:store(K, Value, D) end, Dict, Keys).
 

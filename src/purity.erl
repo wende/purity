@@ -52,29 +52,29 @@
 -type options() :: purity_utils:options().
 
 
--spec module(cerl:c_module()) -> dict().
+-spec module(cerl:c_module()) -> dict:dict().
 
 module(Core) ->
     ?collect:module(Core).
 
--spec files([string()]) -> dict().
+-spec files([string()]) -> dict:dict().
 
 files(Filenames) ->
     ?collect:files(Filenames).
 
--spec pfiles([string()]) -> dict().
+-spec pfiles([string()]) -> dict:dict().
 
 pfiles(Filenames) ->
     ?collect:pfiles(Filenames).
 
 
--spec propagate(dict(), options()) -> dict().
+-spec propagate(dict:dict(), options()) -> dict:dict().
 
 propagate(Tab, Opts) ->
     ?analyse:propagate(Tab, Opts).
 
 
--spec propagate(dict(), purity_plt:plt(), options()) -> dict().
+-spec propagate(dict:dict(), purity_plt:plt(), options()) -> dict:dict().
 
 propagate(Tab, Plt, Opts) ->
     ?analyse:analyse(Tab, Plt, Opts).
@@ -82,7 +82,7 @@ propagate(Tab, Plt, Opts) ->
 
 %% @doc Simple purity test, only distinguishes between pure and impure.
 %% Any function missing from the lookup table is also considered impure.
--spec is_pure(mfa(), dict()) -> boolean().
+-spec is_pure(mfa(), dict:dict()) -> boolean().
 
 is_pure({_,_,_} = MFA, Table) ->
     case dict:find(MFA, Table) of
@@ -100,7 +100,7 @@ is_pure({_,_,_} = MFA, Table) ->
 %% @see is_pure/2
 %% @see module/1
 %% @see propagate/3
--spec module(cerl:c_module(), options()) -> dict().
+-spec module(cerl:c_module(), options()) -> dict:dict().
 
 module(Core, Options) ->
     Tab = module(Core),
@@ -130,7 +130,7 @@ load_plt_no_errors(Opts) ->
 %% @doc Return a list of MFAs and a list of primops for which we have no
 %% pureness information.
 
--spec find_missing(dict()) -> {[mfa()], [purity_utils:primop()]}.
+-spec find_missing(dict:dict()) -> {[mfa()], [purity_utils:primop()]}.
 
 find_missing(Table) ->
     Set1 = sets:from_list(?utils:dependencies(Table, fun ?utils:is_mfa/1)),

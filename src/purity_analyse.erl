@@ -89,7 +89,7 @@ bif_dependencies(Table) ->
 %% @see propagate_purity/2
 %% @see propagate_termination/2
 
--spec propagate(dict(), options()) -> dict().
+-spec propagate(dict:dict(), options()) -> dict:dict().
 
 propagate(Tab, Opts) ->
     case ?utils:option(both, Opts) of
@@ -117,12 +117,12 @@ arg_dep(_) ->
 %%% Simplified algorithm %%%
 
 %% @doc State record for the new algorithm.
--record(s, {tab :: dict(),
-            rev :: dict(),
-            unk  = sets:new() :: set(),
-            diff = dict:new() :: dict(),
+-record(s, {tab :: dict:dict(),
+            rev :: dict:dict(),
+            unk  = sets:new() :: sets:set(),
+            diff = dict:new() :: dict:dict(),
             ws   = []         :: list(),
-            cs   = sets:new() :: set()}).
+            cs   = sets:new() :: sets:set()}).
 
 
 %% Convert a lookup table returned by the analysis to the one required
@@ -141,12 +141,15 @@ initial_purity({_P, DL} = V) when is_list(DL) ->
     V.
 
 
-%%% Pureness values have a well defined ordering: s > d > e > p
+%%% Pureness values have a well defined ordering: s > n > d > e > p
 %% @doc Implement the ordering relation of purity values.
 -spec sup(purity_level(), purity_level()) -> purity_level().
 sup(e, p) -> e;
 sup(d, p) -> d;
 sup(d, e) -> d;
+sup(n, p) -> n;
+sup(n, e) -> n;
+sup(n, d) -> n;
 sup(s, _) -> s;
 sup(A, A) when is_atom(A) -> A;
 sup(A, B) when is_atom(A), is_atom(B) -> sup(B, A).
@@ -156,7 +159,7 @@ sup(Values) when is_list(Values) ->
     lists:foldl(fun sup/2, p, Values).
 
 
--spec propagate_purity(dict(), options()) -> dict().
+-spec propagate_purity(dict:dict(), options()) -> dict:dict().
 
 propagate_purity(Tab, Opts) ->
     %% These functions work on previous types of values.
@@ -664,7 +667,7 @@ workset(Functions) ->
 %%% Miscellaneous helpers.
 
 
--spec purity_of(term(), dict()) -> purity().
+-spec purity_of(term(), dict:dict()) -> purity().
 
 purity_of(F, T) ->
     case dict:fetch(F, T) of
@@ -716,7 +719,7 @@ map_purity({P, DL}, Values) ->
 %% values, since there can be only two states, terminating (pure) or
 %% non-terminating (equivalent to the maximal value of `side-effect').
 
--spec propagate_termination(dict(), options()) -> dict().
+-spec propagate_termination(dict:dict(), options()) -> dict:dict().
 
 propagate_termination(Tab, _Opts) ->
     T1 = add_predefined_termination(initialise(Tab)),
@@ -785,7 +788,7 @@ intersection([S|Sets]) ->
 
 
 %% @doc Combine purity and termination analysis.
--spec propagate_both(dict(), options()) -> dict().
+-spec propagate_both(dict:dict(), options()) -> dict:dict().
 
 propagate_both(Tab, Opts) ->
     Tp = propagate_purity(Tab, Opts),
@@ -817,7 +820,7 @@ sup_at_least(Pp, Pt) when is_atom(Pp) ->
 %% are now present. It is presumably less expensive to blindly add
 %% these functions instead of checking exactly which ones have
 %% dependencies on the newly analysed modules. TODO Verify
--spec analyse(dict(), purity_plt:plt(), options()) -> dict().
+-spec analyse(dict:dict(), purity_plt:plt(), options()) -> dict:dict().
 
 analyse(Tab, Plt, Opts) ->
     T =

@@ -36,9 +36,9 @@
 
 -type map_key() :: cerl:var_name().
 -type map_val() :: mfa() | pos_integer().
--type map()     :: [{map_key(), map_val()}].
+-type varmap()     :: [{map_key(), map_val()}].
 
--type sub() :: {dict(), dict()}.
+-type sub() :: {dict:dict(), dict:dict()}.
 
 -type deplist()      :: purity_utils:deplist().
 -type dependency()   :: purity_utils:dependency().
@@ -67,15 +67,15 @@
 %%            value or a context.
 -record(state, {mfa     = undefined  :: mfa() | undefined,
                 ctx     = ctx_new()  :: deplist(),
-                vars    = map_new()  :: map(),
-                args    = map_new()  :: map(),
+                vars    = map_new()  :: varmap(),
+                args    = map_new()  :: varmap(),
                 subs    = sub_new()  :: sub(),
-                aliases = dict:new() :: dict(),
+                aliases = dict:new() :: dict:dict(),
                 free    = []         :: [cerl:var_name()],
                 nested  = []         :: [mfa()],
                 count   = 1          :: pos_integer(),
                 names   = []         :: [atom()],
-                table   = dict:new() :: dict()}).
+                table   = dict:new() :: dict:dict()}).
 
 -type state() :: #state{}.
 
@@ -86,7 +86,7 @@
 %% Analysis starts from parsed core erlang terms.
 %%
 %% @see files/2
--spec module(cerl:c_module()) -> dict().
+-spec module(cerl:c_module()) -> dict:dict().
 
 module(Core) ->
     module(Core, dict:new()).
@@ -115,7 +115,7 @@ module(Core, Table) ->
 %%
 %% @see module/2
 
--spec files([file:filename()]) -> dict().
+-spec files([file:filename()]) -> dict:dict().
 
 files(Filenames) ->
     files(Filenames, dict:new()).
@@ -127,7 +127,7 @@ files(Filenames, Table) when is_list(Filenames) ->
 %% In case of error a message is printed and an empty lookup table is
 %% returned.
 
--spec file(file:filename()) -> dict().
+-spec file(file:filename()) -> dict:dict().
 
 file(Filename) ->
     file(Filename, dict:new()).
@@ -151,7 +151,7 @@ file(Filename, Table) ->
 %% @see module/2
 %% @see files/1
 
--spec pfiles([file:filename()]) -> dict().
+-spec pfiles([file:filename()]) -> dict:dict().
 
 pfiles(Filenames) when is_list(Filenames) ->
     Tabs = ?utils:pmap({?MODULE, file}, [], Filenames),
@@ -244,6 +244,22 @@ traverse(Tree, #state{ctx = Ctx} = St0) ->
                            cerl:bitstr_flags(Tree)], St0);
         tuple ->
             traverse_list(cerl:tuple_es(Tree), St0);
+        map ->
+            %% Maps have an argument (base map) and pairs (key-value)
+            Arg = cerl:map_arg(Tree),
+            Pairs = cerl:map_es(Tree),
+            %% Extract keys and values from each pair
+            KeysVals = lists:flatmap(
+                fun(Pair) ->
+                    [cerl:map_pair_key(Pair), cerl:map_pair_val(Pair)]
+                end, Pairs),
+            traverse_list([Arg | KeysVals], St0);
+        map_pair ->
+            %% Map pairs contain key, value, and operation
+            %% The operation is just an atom (assoc or exact), skip it
+            Key = cerl:map_pair_key(Tree),
+            Val = cerl:map_pair_val(Tree),
+            traverse_list([Key, Val], St0);
         'catch' ->
             %% TODO: Would be nice if use of catch on functions that
             %% could never raise exceptions was detected and this
@@ -758,11 +774,11 @@ lookup_arg(Name, #state{args = ArgMap} = St) ->
 map_new() ->
     [].
 
--spec map_add(map_key(), map_val(), map()) -> map().
+-spec map_add(map_key(), map_val(),varmap()) -> varmap().
 map_add(Key, Val, Map) ->
     [{Key, Val}|Map].
 
--spec map_lookup(map_key(), map()) -> error | {ok, map_val()}.
+-spec map_lookup(map_key(),varmap()) -> error | {ok, map_val()}.
 map_lookup(Key, Map) ->
     case lists:keyfind(Key, 1, Map) of
         false ->

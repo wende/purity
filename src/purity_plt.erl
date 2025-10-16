@@ -48,8 +48,8 @@
 
 -record(plt, {version   = ?VERSION   :: string(),
               checksums = []         :: [file_checksum()],
-              table     = dict:new() :: dict(),
-              cache     = []         :: [{term(), dict()}]}).
+              table     = dict:new() :: dict:dict(),
+              cache     = []         :: [{term(), dict:dict()}]}).
 
 -opaque plt() :: #plt{}.
 
@@ -65,23 +65,23 @@
 new() ->
     #plt{}.
 
--spec new(dict(), files()) -> plt().
+-spec new(dict:dict(), files()) -> plt().
 new(Table, Filenames) ->
     #plt{table = Table,
          checksums = compute_checksums(absolute(Filenames))}.
 
--spec table(plt(), options()) -> dict().
+-spec table(plt(), options()) -> dict:dict().
 table(#plt{} = Plt, Options) ->
     case result_table(Plt, Options) of
         {ok, Table} -> Table;
         error -> info_table(Plt)
     end.
 
--spec result_table(plt(), options()) -> error | {ok, dict()}.
+-spec result_table(plt(), options()) -> error | {ok, dict:dict()}.
 result_table(#plt{cache = C}, Options) ->
     assoc_find(cache_key(Options), C).
 
- -spec info_table(plt()) -> dict().
+ -spec info_table(plt()) -> dict:dict().
 info_table(#plt{table = Table}) ->
     Table.
 
@@ -214,7 +214,7 @@ dependent_modules(#plt{table = T}, Filenames) ->
 
 
 %% @doc Update the PLT with a new table and files.
--spec update(plt(), options(), {files(), dict(), dict()}) ->
+-spec update(plt(), options(), {files(), dict:dict(), dict:dict()}) ->
     {ok, plt()} | {error, inconsistent_tables}.
 
 update(Plt, Options, {Filenames, T, R}) ->
